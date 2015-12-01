@@ -1,4 +1,4 @@
-﻿// English retail version. Tested with EVO's no-cd crack. There is a very slight chance that it works with original exe
+﻿// English retail version.
 state("game", "1.0en")
 {
 	bool isLoading1 : 0x2F94BC;			 // the only static loading related address, goes to 1 in 1/3rd of loading
