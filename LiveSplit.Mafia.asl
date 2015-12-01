@@ -4,7 +4,7 @@ state("game", "1.0en")
 	bool isLoading1 : 0x2F94BC;			 // the only static loading related address, goes to 1 in 1/3rd of loading
 	bool isLoading2 : 0x2F9464, 0x10c; 	 // triggers on "Please wait" and minor loads, goes back to 0 for a sec during loading
 	bool m1Cutscene : 0x25608C;
-	bool finalCutscene : 0x25671C;
+	byte finalCutscene : 0x256444;
 	string6 mission : 0x2F94A8, 0x0;
 	string15 missionAlt : 0x2F94A8, 0x0; // used for "submissions"
 }
@@ -16,7 +16,7 @@ state("game", "1.2plkk")
 	bool isLoading1 : 0x247E74;
 	bool isLoading2 : 0x247E1C, 0x10c;
 	bool m1Cutscene : 0x23D730;
-	bool finalCutscene : 0x2BDD7C;
+	byte finalCutscene : 0x2BDD7C;
 	string6 mission : 0x247E60, 0x0;
 	string15 missionAlt : 0x247E60, 0x0;
 }
@@ -63,7 +63,7 @@ split
 	}
 	else if (current.mission == "mise20") {
 		if (current.missionAlt == "mise20-galery") {
-			return (!old.finalCutscene && current.finalCutscene);	// split on final cutscene trigger
+			return (old.finalCutscene == 0 && current.finalCutscene > 0);	// split on final cutscene trigger
 		} else { return old.mission != current.mission; }
 	}
 	else {
