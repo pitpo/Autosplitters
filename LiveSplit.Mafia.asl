@@ -6,7 +6,7 @@ state("game", "1.0en")
 	bool m1Cutscene : 0x25608C;
 	byte finalCutscene : 0x256444;
 	string6 mission : 0x2F94A8, 0x0;
-	string15 missionAlt : 0x2F94A8, 0x0; // used for "submissions"
+	string16 missionAlt : 0x2F94A8, 0x0; // used for "submissions"
 }
 
 // Polish "Kolekcja Klasyki" version from 2006 (I leave it here for reference)
@@ -51,8 +51,11 @@ reset
 // Split for every mission change (at the very beginning of every loading)
 split
 {
-	if (current.mission == "mise06" || current.mission == "mise01" || 
-		current.mission == "00menu" || current.missionAlt == "FMV KONEC") { return false; }
+	if (current.mission == "mise06" || current.mission == "mise01" || current.mission == "00menu" || 
+		current.missionAlt == "FMV KONEC" || current.mission == "INTERM" || current.missionAlt == "FMV INTERMEZZO05") 
+	{ 
+		return false; 
+	}
 	else if (current.mission == "mise07") {
 		return (old.mission != current.mission || (old.missionAlt == "mise07-sara" && 
 				current.missionAlt == "mise07b-saliery"));
