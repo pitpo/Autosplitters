@@ -1,12 +1,12 @@
 ﻿// English retail version.
 state("game", "1.0en")
 {
-	bool isLoading1 : 0x2F94BC;			 // the only static loading related address, goes to 1 in 1/3rd of loading
-	bool isLoading2 : 0x2F9464, 0x10c; 	 // triggers on "Please wait" and minor loads, goes back to 0 for a sec during loading
+	bool isLoading1 : 0x2F94BC;		// the only static loading related address, goes to 1 in 1/3rd of loading
+	bool isLoading2 : 0x2F9464, 0x10c; 	// triggers on "Please wait" and minor loads, goes back to 0 for a sec during loading
 	bool m1Cutscene : 0x25608C;
 	byte finalCutscene : 0x256444;
 	string6 mission : 0x2F94A8, 0x0;
-	string16 missionAlt : 0x2F94A8, 0x0; // used for "submissions"
+	string16 missionAlt : 0x2F94A8, 0x0;	// used for "submissions"
 }
 
 // Polish "Kolekcja Klasyki" version from 2006 (I leave it here for reference)
@@ -33,48 +33,57 @@ init
 
 update
 {
-	if (version == "") { return; }
+	if (version == "") { return; }		// If version is unknown, don't do anything (without it, it'd default to "1.0en" version)
 }
 
-// Start timer after skipping the first cutscene
+// Start timer after skipping the first cutscene (you can comment this section out if you don't want this feature)
 start
 {
 	return (!old.m1Cutscene && current.m1Cutscene && current.mission == "mise01");
 }
 
-// Reset timer on "An Offer You Can't Refuse" load
+// Reset timer on "An Offer You Can't Refuse" load (you can comment this section out if you don't want this feature)
 reset
 {
 	return (current.mission == "mise01" && !old.isLoading1 && current.isLoading1);
 }
 
-// Split for every mission change (at the very beginning of every loading)
+// Split for every mission change (at the very beginning of every loading) [you can comment this section out if you don't want this feature]
 split
 {
+	// Don't split on these mission changes
 	if (current.mission == "mise06" || current.mission == "mise01" || current.mission == "00menu" || 
 		current.missionAlt == "FMV KONEC" || current.mission == "INTERM" || current.missionAlt == "FMV INTERMEZZO05") 
 	{ 
 		return false; 
 	}
+	
+	// Split after Sarah
 	else if (current.mission == "mise07") {
 		return (old.mission != current.mission || (old.missionAlt == "mise07-sara" && 
 				current.missionAlt == "mise07b-saliery"));
 	}
+	
+	// Split after The Whore
 	else if (current.mission == "mise08") {
 		return (old.mission != current.mission || (old.missionAlt == "mise08-hotel" &&
 				current.missionAlt == "mise08-kostel"));
 	}
+	
+	// Final split
 	else if (current.mission == "mise20") {
 		if (current.missionAlt == "mise20-galery") {
 			return (old.finalCutscene == 0 && current.finalCutscene > 0);	// split on final cutscene trigger
 		} else { return old.mission != current.mission; }
 	}
+	
+	// Split for everything else
 	else {
 		return (old.mission != current.mission);
 	}
 }
 
-// Load remover
+// Load remover  (you can comment this section out if you don't want this feature)
 // Using two addresses because I couldn't find anything that changes its value for the entire loading process
 isLoading
 {
