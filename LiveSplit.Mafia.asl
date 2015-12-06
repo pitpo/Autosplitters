@@ -51,41 +51,37 @@ reset
 // Split for every mission change (at the very beginning of every loading) [you can comment this section out if you don't want this feature]
 split
 {
-	// Don't split on these mission changes
-	if (current.mission == "mise06" || current.mission == "mise01" || current.mission == "00menu" || 
-		current.missionAlt == "FMV KONEC" || current.mission == "INTERM" || current.missionAlt == "FMV INTERMEZZO05") 
-	{ 
-		return false; 
-	}
+	if (current.mission.Contains("mise") && old.mission != "00menu") {
+		var currentSplit = timer.CurrentSplit.Name.ToLower();
 	
-	// Split after Sarah
-	else if (current.mission == "mise07") {
-		return (old.mission != current.mission || (old.missionAlt == "mise07-sara" && 
-				current.missionAlt == "mise07b-saliery"));
-	}
+		// Don't split on these mission changes
+		if (current.mission == "mise06" || current.mission == "mise01") { return false; }
 	
-	// Split after The Whore
-	else if (current.mission == "mise08") {
-		return (old.mission != current.mission || (old.missionAlt == "mise08-hotel" &&
-				current.missionAlt == "mise08-kostel"));
-	}
+		// Split after Sarah
+		else if (current.missionAlt == "mise07b-saliery" && currentSplit.Contains("sarah")) {
+			return (old.missionAlt == "mise07-sara" && current.missionAlt == "mise07b-saliery");
+		}
 	
-	// Final split
-	else if (current.mission == "mise20") {
-		if (current.missionAlt == "mise20-galery") {
+		// Split after The Whore
+		else if (current.missionAlt == "mise08-kostel" && currentSplit.Contains("whore")) {
+			return (old.missionAlt == "mise08-hotel" && current.missionAlt == "mise08-kostel");
+		}
+	
+		// Final split
+		else if (current.missionAlt == "mise20-galery") {
 			return (old.finalCutscene == 0 && current.finalCutscene > 0);	// split on final cutscene trigger
-		} else { return old.mission != current.mission; }
-	}
+		}
 	
-	// Split for everything else
-	else {
-		return (old.mission != current.mission);
-	}
+		// Split for everything else
+		else {
+			return (old.mission != current.mission);
+		}
+	} else { return false; }
 }
 
 // Load remover  (you can comment this section out if you don't want this feature)
 // Using two addresses because I couldn't find anything that changes its value for the entire loading process
 isLoading
 {
-	return (current.isLoading1 || current.isLoading2);
+	return ((current.isLoading1 || current.isLoading2) && current.mission != "00menu");
 }
