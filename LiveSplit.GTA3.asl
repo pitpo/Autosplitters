@@ -629,13 +629,16 @@ split
 			}
 			case 2:
 			{
-				if (vars.missionPassedAddress == vars.OMSplitCurrent[0])
+				if (vars.OMSplitCurrent.Count != 0) 
 				{
-					if (vars.onMissionFlag.Current == 1 && vars.onMissionFlag.Old == 0 && vars.skipSplit == false)
+					if (vars.missionPassedAddress == vars.OMSplitCurrent[0])
 					{
-						vars.OMSplitCurrent.RemoveAt(0);
-						goto case 0;
-					} else { break; }
+						if (vars.onMissionFlag.Current == 1 && vars.onMissionFlag.Old == 0 && vars.skipSplit == false)
+						{
+							vars.OMSplitCurrent.RemoveAt(0);
+							goto case 0;
+						} else { break; }
+					} else { goto case 0; }
 				} else { goto case 0; }
 			}
 			case 0:
