@@ -536,7 +536,6 @@ update
 		switch ((int)vars.missionPassedAddress)
 		{
 			case 0:
-				print("i'm in case 0");
 				break;
 			//case (int)0x35B778:  // The Fuzz Ball - split after missions and the "infamous stunts" are done (it's possible to set up a watcher for idividual stunts, but i'm to lazy to look for addresses)
 			//	if (vars.missionPassed == true && vars.hundoStunts.Current - vars.previousStunts >= 3)
