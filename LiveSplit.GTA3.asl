@@ -317,17 +317,11 @@ init
 	vars.splitOnMission = 2;
 	
 	vars.missionPassed = false;
-	if (vars.missionAddressesCurrent.Count != 0)
-	{
-		vars.missionPassedAddress = vars.missionAddressesCurrent[0]; // Used to store buffered mission
-	}
-	else
-	{
-		vars.missionPassedAddress = 0x0;
-	}
+	vars.missionPassedAddress = 0x0; // Used to store buffered mission address (defaults to nothing for safety reasons)
 	
-	if (vars.splitOnMission != 0)
+	if (vars.splitOnMission != 0 || vars.category.Contains("100%") || vars.category.Contains("hundo"))
 	{
+		// There is no onMission variable exclusive to story missions, but there's one for every other oddjob (and "employer"?)
 		vars.onMissionFlag = new MemoryWatcher<int>(new DeepPointer(0x35B6C4+vars.offset));
 		vars.onMissionFlagVigilante = new MemoryWatcher<int>(new DeepPointer(0x35B964+vars.offset));
 		vars.onMissionFlagTaxi = new MemoryWatcher<int>(new DeepPointer(0x35B9BC+vars.offset));
@@ -350,11 +344,11 @@ init
 				vars.OMSplit.Add(0x35B898);  // Evidence Dash
 			}
 		}
-	}
-	
-	if (vars.splitOnMission == 2)
-	{
-		vars.OMSplitCurrent = new List<int>(vars.OMSplit);
+		if (vars.splitOnMission == 2)
+		{
+			// Make copy of that list to make it reset friendly
+			vars.OMSplitCurrent = new List<int>(vars.OMSplit);
+		}
 	}
 	
 	// Used to know when the player skips the initial cutscene and starts the run.
@@ -369,6 +363,7 @@ init
 		vars.hundoShouldSplit = false;
 		vars.progressOld = 0;
 		vars.progressReal = 0;
+		vars.splitOnMissionHundo = false;
 		
 		//vars.previousStunts = 0;
 		
@@ -438,7 +433,7 @@ update
 	// Keeping a few extra memory watchers up to date for the current frame.
 	vars.skipInitialCutsceneCheck.Update(game);
 	vars.gameState.Update(game);
-	if (vars.splitOnMission != 0) 
+	if (vars.splitOnMission != 0 || vars.category.Contains("100%") || vars.category.Contains("hundo")) 
 	{
 		vars.onMissionFlag.Update(game);
 		vars.onMissionFlagFirefighter.Update(game);
@@ -541,6 +536,7 @@ update
 		switch ((int)vars.missionPassedAddress)
 		{
 			case 0:
+				print("i'm in case 0");
 				break;
 			//case (int)0x35B778:  // The Fuzz Ball - split after missions and the "infamous stunts" are done (it's possible to set up a watcher for idividual stunts, but i'm to lazy to look for addresses)
 			//	if (vars.missionPassed == true && vars.hundoStunts.Current - vars.previousStunts >= 3)
@@ -553,6 +549,7 @@ update
 				{
 					vars.hundoShouldSplit = true;
 					vars.missionPassed = false;
+					vars.splitOnMissionHundo = true;
 				}
 				break;
 			case (int)0x35B900:  // Escort Service for Firefighter
@@ -567,6 +564,7 @@ update
 				{
 					vars.hundoShouldSplit = true;
 					vars.missionPassed = false;
+					vars.splitOnMissionHundo = false;
 				}
 				break;
 		}
@@ -585,6 +583,7 @@ start
 			vars.OMSplitCurrent = new List<int>(vars.OMSplit);
 		}
 		vars.missionPassed = false;
+		vars.missionPassedAddress = 0x0;
 		
 		if (vars.missionAddressesCurrent.Count != 0) {
 			vars.currentMissionWatcher = new MemoryWatcher<byte>(new DeepPointer(vars.missionAddressesCurrent[0]+vars.offset));
@@ -599,7 +598,6 @@ start
 		{
 			vars.progressOld = 0;
 			vars.progressReal = 0;
-			if (vars.missionAddressesCurrent.Count != 0) {vars.missionPassedAddress = vars.missionAddressesCurrent[0];}
 		}
 	}
 	
@@ -619,21 +617,21 @@ reset
 
 split
 {
-	if (vars.missionPassed == true)
+	if (vars.missionPassed && !vars.category.Contains("100%") && !vars.category.Contains("hundo"))
 	{
 		switch ((int)vars.splitOnMission) {
-			case 1:
+			case 1:	// Split on every onMissionFlag 0->1 change (but only on story missions)
 			{
-				if (vars.onMissionFlag.Current == 1 && vars.onMissionFlag.Old == 0 && vars.skipSplit == false) { goto case 0; }
+				if (vars.onMissionFlag.Current == 1 && vars.onMissionFlag.Old == 0 && !vars.skipSplit) { goto case 0; }
 				else { break; }
 			}
-			case 2:
+			case 2:	// Split on selected onMissionFlag 0->1 changes
 			{
-				if (vars.OMSplitCurrent.Count != 0) 
+				if (vars.OMSplitCurrent.Count != 0)
 				{
 					if (vars.missionPassedAddress == vars.OMSplitCurrent[0])
 					{
-						if (vars.onMissionFlag.Current == 1 && vars.onMissionFlag.Old == 0 && vars.skipSplit == false)
+						if (vars.onMissionFlag.Current == 1 && vars.onMissionFlag.Old == 0 && !vars.skipSplit)
 						{
 							vars.OMSplitCurrent.RemoveAt(0);
 							goto case 0;
@@ -641,7 +639,7 @@ split
 					} else { goto case 0; }
 				} else { goto case 0; }
 			}
-			case 0:
+			case 0: // Split after mission pass
 			default:
 			{
 				vars.missionPassed = false;
@@ -679,9 +677,19 @@ split
 	else if (vars.category.Contains("100%") || vars.category.Contains("hundo"))
 	{
 		if (vars.hundoShouldSplit == true)
-		{ 
-			vars.hundoShouldSplit = false;
-			return true;
+		{
+			if (vars.splitOnMissionHundo) 
+			{
+				if (vars.onMissionFlag.Current == 1 && vars.onMissionFlag.Old == 0 && !vars.skipSplit) 
+				{
+					vars.splitOnMissionHundo = false;
+					vars.hundoShouldSplit = false;
+					return true;
+				}
+			} else {
+				vars.hundoShouldSplit = false;
+				return true;
+			}
 		}
 	}
 }
