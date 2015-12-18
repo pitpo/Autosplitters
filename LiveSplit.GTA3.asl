@@ -537,14 +537,14 @@ update
 		{
 			case 0:
 				break;
-			//case (int)0x35B778:  // The Fuzz Ball - split after missions and the "infamous stunts" are done (it's possible to set up a watcher for idividual stunts, but i'm to lazy to look for addresses)
-			//	if (vars.missionPassed == true && vars.hundoStunts.Current - vars.previousStunts >= 3)
+			//case (int)0x35B778:  // The Fuzz Ball - split after mission and the "infamous stunts" are done (it's possible to set up a watcher for individual stunts, but i'm to lazy to look for addresses)
+			//	if (vars.missionPassed && vars.hundoStunts.Current - vars.previousStunts >= 3)
 			//	{
 			//		vars.hundoShouldSplit = true;
 			//		vars.missionPassed = false;
 			//	}
 			case (int)0x35B818:  // Her Lover - non linear Portland segment
-				if (vars.missionPassed == true && vars.getawayDone.Current == 1 && vars.vigilantePortland.Current >= 20)
+				if (vars.missionPassed && vars.getawayDone.Current == 1 && vars.vigilantePortland.Current >= 20)
 				{
 					vars.hundoShouldSplit = true;
 					vars.missionPassed = false;
@@ -552,18 +552,18 @@ update
 				}
 				break;
 			case (int)0x35B900:  // Escort Service for Firefighter
-				if (vars.missionPassed == true && vars.firefighterStaunton.Current >= 20)
+				if (vars.missionPassed && vars.firefighterStaunton.Current >= 20)
 				{
 					vars.hundoShouldSplit = true;
 					vars.missionPassed = false;
 				}
 				break;
 			default:
-				if (vars.missionPassed == true)
+				if (vars.missionPassed)
 				{
 					vars.hundoShouldSplit = true;
 					vars.missionPassed = false;
-					vars.splitOnMissionHundo = false;
+					vars.splitOnMissionHundo = false;	// split after mission pass by default
 				}
 				break;
 		}
@@ -652,7 +652,7 @@ split
 	// That timer variable is used in different missions so we're making sure that we're on The Exchange
 	// by also checking for variable that is set in the very last part of the mission.
 	// Timer variable is changed on the fade out when you lose control.
-	if (vars.category.Contains("any") || vars.category.Contains("beat the game") && vars.missionAddressesCurrent.Count == 0)
+	if ((vars.category.Contains("any") || vars.category.Contains("beat the game")) && vars.missionAddressesCurrent.Count == 0)
 	{
 		return current.exchangeHelipad == 1 && current.exchangeTimer != old.exchangeTimer;
 	}
@@ -675,7 +675,7 @@ split
 	// 100%
 	else if (vars.category.Contains("100%") || vars.category.Contains("hundo"))
 	{
-		if (vars.hundoShouldSplit == true)
+		if (vars.hundoShouldSplit)
 		{
 			if (vars.splitOnMissionHundo) 
 			{
@@ -686,7 +686,6 @@ split
 					return true;
 				}
 			} else {
-				vars.hundoShouldSplit = false;
 				return true;
 			}
 		}
