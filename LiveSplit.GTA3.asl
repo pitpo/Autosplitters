@@ -26,6 +26,7 @@ state("gta3", "steam")
 
 init
 {
+	refreshRate = 30;
 	// Declaring variables.
 	vars.offset = 0;
 	
@@ -53,7 +54,7 @@ init
 			//vars.missionAddresses.Add(0x35B770);  // Drive Misty For Me
 			//vars.missionAddresses.Add(0x35B780);  // Mike Lips Last Lunch
 			//vars.missionAddresses.Add(0x35B784);  // Farewell 'Chunky' Lee Chong
-			vars.missionAddresses.Add(0x35B788);  // Van Heist
+			//vars.missionAddresses.Add(0x35B788);  // Van Heist
 			//vars.missionAddresses.Add(0x35B78C);  // Cipriani's Chauffeur
 			vars.missionAddresses.Add(0x35B79C);  // Taking Out the Laundry
 			//vars.missionAddresses.Add(0x35B7A0);  // The Pick-Up
@@ -328,8 +329,13 @@ init
 		vars.onMissionFlagParamedic = new MemoryWatcher<int>(new DeepPointer(0x35B954+vars.offset));
 		vars.onMissionFlagFirefighter = new MemoryWatcher<int>(new DeepPointer(0x35B95C+vars.offset));
 		vars.onMissionFlagRampage = new MemoryWatcher<int>(new DeepPointer(0x35C0A8+vars.offset));
-		vars.onMissionFlagHIcon = new MemoryWatcher<int>(new DeepPointer(0x30AF04+vars.offset));
 		vars.skipSplit = false;
+		vars.checkSkipSplit = true;
+		
+		// This string (MemoryWatcher has issues with strings so it's byte) stores name of the last thread
+		// It's only useful for hospital and police station icons. Game likes to switch addresses 
+		// for this thing (it's a static variable, so no pointers) but it's always this one for those two icons
+		vars.lastOddJobThread = new MemoryWatcher<byte>(new DeepPointer(0x308308+vars.offset));
 		
 		if (vars.splitOnMission == 2 && !((IDictionary<String, object>)vars).ContainsKey("OMSplit"))
 		{
@@ -437,22 +443,24 @@ update
 	{
 		vars.onMissionFlag.Update(game);
 		vars.onMissionFlagFirefighter.Update(game);
-		vars.onMissionFlagHIcon.Update(game);
 		vars.onMissionFlagParamedic.Update(game);
 		vars.onMissionFlagRampage.Update(game);
 		vars.onMissionFlagTaxi.Update(game);
 		vars.onMissionFlagVigilante.Update(game);
+		vars.lastOddJobThread.Update(game);
 		
 		// There must be other way to do it...
-		if (vars.onMissionFlagFirefighter.Current == 1 && vars.onMissionFlagFirefighter.Old == 0 ||
-			vars.onMissionFlagHIcon.Current == 1 && vars.onMissionFlagHIcon.Old == 0 ||
-			vars.onMissionFlagParamedic.Current == 1 && vars.onMissionFlagParamedic.Old == 0 ||
-			vars.onMissionFlagRampage.Current == 1 && vars.onMissionFlagRampage.Old == 0 ||
-			vars.onMissionFlagTaxi.Current == 1 && vars.onMissionFlagTaxi.Old == 0 ||
-			vars.onMissionFlagVigilante.Current == 1 && vars.onMissionFlagVigilante.Old == 0)
+		if ((vars.onMissionFlagFirefighter.Current == 1 && vars.onMissionFlagFirefighter.Old == 0) ||
+			(vars.onMissionFlagParamedic.Current == 1 && vars.onMissionFlagParamedic.Old == 0) ||
+			(vars.onMissionFlagRampage.Current == 1 && vars.onMissionFlagRampage.Old == 0) ||
+			(vars.onMissionFlagTaxi.Current == 1 && vars.onMissionFlagTaxi.Old == 0) ||
+			(vars.onMissionFlagVigilante.Current == 1 && vars.onMissionFlagVigilante.Old == 0) ||
+			((vars.lastOddJobThread.Current == 104 || vars.lastOddJobThread.Current == 119) && vars.lastOddJobThread.Current != vars.lastOddJobThread.Old))
 		{
 			vars.skipSplit = true;
-		} else { vars.skipSplit = false; }
+			vars.checkSkipSplit = false;
+		} else if (vars.checkSkipSplit) { vars.skipSplit = false; }
+		else { vars.checkSkipSplit = true; }
 	}
 	
 	// All missions (besides the final split).
