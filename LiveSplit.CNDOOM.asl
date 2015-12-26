@@ -1,29 +1,60 @@
-﻿// TODO:
-// -version detection
-// -add category support (all episodes runs)
-// -add final map split
-// -split on intermission
-// -map 9 support
-// -Doom 2 support
-// -IWAD detection
+﻿// Automatically splits at the end of every level (episode if All Episodes run is detected)
+// Automatically resets at the start of map 1 (e1m1 if All Episodes run is detected)
+// Should work with every PWAD and IWAD
+// Huge THANK YOU to Chocolate Doom programmers for "keeping it simple" (especially for using the same "current level" variable for both D1 and D2 IWADs)
 state("cndoom", "2.0.3.2")
 {
-	int episode	: 0x117A34;
+	int episode : 0x117A34;
 	int level : 0x1173C4;
 	int loading : 0x10EF28;
+	int intermission : 0x56938;
+}
+
+init
+{
+	if (modules.First().ModuleMemorySize == 7077888) {
+		version = "2.0.3.2";
+	}
+	
+	// Set this to false if you want to split on every level of every episode in All Episodes run
+	vars.splitOnEpisode = true;
+	vars.category = timer.Run.CategoryName.ToLower();
+}
+
+update
+{
+	if (version == "") {
+		return;
+	}
 }
 
 start
 {
-	return current.level == 1 && current.loading == 0 && current.loading != old.loading;
+	vars.previousMap = 0;	// Setting this to make m1 split possible
+	return current.level == 1 && current.loading == 0 && old.loading == 1;
 }
 
 split
 {
-	return current.level == old.level + 1;
+	var currentSplit = timer.CurrentSplit.Name.ToLower();
+	
+	if ((currentSplit.Contains("ep") || (vars.category.Contains("episodes") && vars.splitOnEpisode == true)) 
+		&& current.level == 8 && current.intermission == 1 && old.intermission == 0) {
+		return true; 
+	} else if (current.intermission == 1 && old.intermission == 0 && current.level != vars.previousMap) {
+		vars.previousMap = current.level;	// Used to skip split if player returns to previous level (for some really important reason...)
+		return true;
+	}
+	
 }
 
 reset
 {
-	return current.level == 1 && current.loading == 3 && old.loading == 0;
+	// old.loading equals 0 when player is loading level from in-game state
+	// old.loading equals 1 when player is loading level from command line boot (and when it's changing states from 3 to 2 to 1 to 0)
+	if (vars.category.Contains("episodes")) {
+		return current.level == 1 && current.episode == 1 && current.loading == 3 && (old.loading == 0 || old.loading == 1);
+	} else {
+		return current.level == 1 && current.loading == 3 && (old.loading == 0 || old.loading == 1);
+	}
 }
