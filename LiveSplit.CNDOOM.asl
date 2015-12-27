@@ -1,5 +1,6 @@
 ﻿// Automatically splits at the end of every level (episode if All Episodes run is detected)
 // Automatically resets at the start of map 1 (e1m1 if All Episodes run is detected)
+// LiveSplit's Game Time gives you relevant In-Game Time (ONLY on SINGLE SEGMENT runs) [single episode and doom 2 runs]
 // Should work with every PWAD and IWAD
 // Huge THANK YOU to Chocolate Doom programmers for "keeping it simple" (especially for using the same "current level" variable for both D1 and D2 IWADs)
 state("cndoom", "2.0.3.2")
@@ -38,9 +39,10 @@ split
 {
 	var currentSplit = timer.CurrentSplit.Name.ToLower();
 	
-	if ((currentSplit.Contains("ep") || (vars.category.Contains("episodes") && vars.splitOnEpisode == true)) 
-		&& current.level == 8 && current.intermission == 1 && old.intermission == 0) {
-		return true; 
+	if (currentSplit.Contains("ep") || (vars.category.Contains("episodes") && vars.splitOnEpisode == true)) {
+		if (current.level == 8 && current.intermission == 1 && old.intermission == 0) {
+			return true;
+		}
 	} else if (current.intermission == 1 && old.intermission == 0 && current.level != vars.previousMap) {
 		vars.previousMap = current.level;	// Used to skip split if player returns to previous level (for some really important reason...)
 		return true;
@@ -56,5 +58,17 @@ reset
 		return current.level == 1 && current.episode == 1 && current.loading == 3 && (old.loading == 0 || old.loading == 1);
 	} else {
 		return current.level == 1 && current.loading == 3 && (old.loading == 0 || old.loading == 1);
+	}
+}
+
+isLoading
+{
+	if (!vars.category.Contains("episode")) {
+		// Doom 2 IWAD
+		return current.loading != 0 || current.intermission != 0;
+	}
+	else if (!vars.category.Contains("episodes")) {
+		// Doom 1 IWAD single episode
+		return current.loading != 0 || current.intermission != 0 || current.level == 8;
 	}
 }
