@@ -32,7 +32,7 @@ update
 start
 {
 	vars.previousMap = 0;	// Setting this to make m1 split possible
-	return current.level == 1 && current.loading == 0 && old.loading == 1;
+	return current.level == 1 && current.loading == 2 && old.loading == 3;
 }
 
 split
@@ -65,10 +65,10 @@ isLoading
 {
 	if (!vars.category.Contains("episode")) {
 		// Doom 2 IWAD
-		return current.loading != 0 || current.intermission != 0;
+		return current.loading == 3 || current.intermission != 0;
 	}
 	else if (!vars.category.Contains("episodes")) {
 		// Doom 1 IWAD single episode
-		return current.loading != 0 || current.intermission != 0 || current.level == 8;
+		return current.loading == 3 || current.intermission != 0 || current.level == 8;
 	}
 }
