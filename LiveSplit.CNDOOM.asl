@@ -7,7 +7,7 @@ state("cndoom", "2.0.3.2")
 {
 	int episode : 0x117A34;
 	int level : 0x1173C4;
-	int loading : 0x10EF28;
+	int loading : 0x10F328;
 	int intermission : 0x56938;
 }
 
