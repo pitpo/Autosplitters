@@ -1,6 +1,7 @@
 ﻿// Automatically splits at the end of every level (episode if All Episodes run is detected)
 // Automatically resets at the start of map 1 (e1m1 if All Episodes run is detected)
 // LiveSplit's Game Time gives you relevant In-Game Time (ONLY on SINGLE SEGMENT runs) [single episode and doom 2 runs]
+// For every 10 minutes of gameplay add 1.4 seconds to IGT. CnDoom starts the timer 0.14 seconds earlier.
 // Should work with every PWAD and IWAD
 // Huge THANK YOU to Chocolate Doom programmers for "keeping it simple" (especially for using the same "current level" variable for both D1 and D2 IWADs)
 state("cndoom", "2.0.3.2")
