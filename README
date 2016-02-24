@@ -4,3 +4,5 @@ LiveSplit.GTAVC.asl - zoton's Vice City autosplitter configured to satisfy my ne
 LiveSplit.CNDOOM.asl - CnDoom autosplitter, splits for every map (episode in All Episodes run)
 LiveSplit.Mafia.asl - Mafia autosplitter and load remover, it splits for every mission so try not to load previous ones (like why the heck would you even want to do that)
 It should work on every 1.0 version
+
+Vice City.bat - Not really an autosplitter, but I don't want to setup another project for one file. Makes International and Japanese version coexist peacefully.
